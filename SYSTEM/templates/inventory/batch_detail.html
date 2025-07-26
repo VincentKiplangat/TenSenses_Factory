@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+
+{% block title %}Batch {{ batch.batch_number }} Details{% endblock %}
+
+{% block content %}
+<div class="pc-container">
+    <div class="pc-content">
+
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <ul class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{% url 'inventory_home' %}">Home</a></li>
+                            <li class="breadcrumb-item" aria-current="page">Batch Details: {{ batch.batch_number }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="display-5 fw-bold text-primary mb-1">Batch Overview</h1>
+                <p class="text-muted">Detailed tracking of batch <span class="badge bg-primary fw-normal">{{ batch.batch_number }}</span> processing stages</p>
+            </div>
+            <div class="d-flex flex-column align-items-end">
+                <span class="badge bg-success fs-6 py-2 px-3 mb-2">
+                    <i class="bi bi-calendar-check me-1"></i> {{ batch.created_at|date:"D, d M Y" }}
+                </span>
+                <span class="badge bg-info fs-6 py-2 px-3">
+                    <i class="bi bi-clock-history me-1"></i> {{ batch.created_at|date:"H:i:s" }}
+                </span>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-body p-4">
+                <div class="row mb-4 border-bottom pb-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-award-fill fs-2 text-warning me-3"></i>
+                            <div>
+                                <small class="text-muted d-block">Certification</small>
+                                <h3 class="mb-0 text-dark">{{ batch.get_certification_display }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-calendar2-check-fill fs-2 text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted d-block">Batch Created</small>
+                                <h3 class="mb-0 text-dark">{{ batch.created_at|date:"M d, Y" }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <table class="table table-borderless mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-center align-middle" style="width: 5%;">
+                                        <i class="bi bi-tag text-info fs-5"></i>
+                                    </td>
+                                    <th class="text-muted" style="width: 35%;">Batch ID</th>
+                                    <td class="fw-semibold">{{ batch.batch_number }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center align-middle">
+                                        <i class="bi bi-geo-alt text-info fs-5"></i>
+                                    </td>
+                                    <th class="text-muted">Regions</th>
+                                    <td class="fw-semibold">{{ regions_joined|default:"—" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center align-middle">
+                                        <i class="bi bi-person-badge text-info fs-5"></i>
+                                    </td>
+                                    <th class="text-muted">Field Officers</th>
+                                    <td class="fw-semibold">{{ officers_joined|default:"—" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center align-middle">
+                                        <i class="bi bi-truck-front text-info fs-5"></i>
+                                    </td>
+                                    <th class="text-muted">Vehicle</th>
+                                    <td class="fw-semibold">{{ batch.vehicle_registration|default:"—" }}</td>
+                                </tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-center align-middle" style="width: 5%;">
+                                        <i class="bi bi-person text-info fs-5"></i>
+                                    </td>
+                                    <th class="text-muted" style="width: 35%;">Driver</th>
+                                    <td class="fw-semibold">{{ batch.driver_name|default:"—" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center align-middle">
+                                        <i class="bi bi-boxes text-info fs-5"></i>
+                                    </td>
+                                    <th class="text-muted">Bags Received</th>
+                                    <td class="fw-semibold">{{ batch.no_of_bags|default:"—" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center align-middle">
+                                        <i class="bi bi-box text-info fs-5"></i>
+                                    </td>
+                                    <th class="text-muted">Quantity</th>
+                                    <td class="fw-semibold">{{ batch.total_quantity_received|floatformat:2|default:"—" }} kg</td>
+                                </tr>
+                                                                                <tr>
+                                    <td class="text-center align-middle">
+                                        <i class="bi bi-person-circle text-info fs-5"></i>
+                                    </td>
+                                    <th class="text-muted">Receiving Officer</th>
+                                    <td class="fw-semibold">
+                                        {{ batch.created_by.get_full_name|default:batch.created_by.username|default:"—" }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="mb-3 text-primary fw-bold">
+            <i class="bi bi-diagram-3 me-2"></i>Processing Stages
+        </h3>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-start border-5 border-primary shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                <i class="bi bi-truck fs-3"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Receiving</h5>
+                        </div>
+                        <p class="card-text text-muted mb-4">Initial receipt and inspection of raw materials</p>
+                        <a href="{% url 'receiving_detail' batch.pk %}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-arrow-right-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-start border-5 border-primary shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                <i class="bi bi-droplet fs-3"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Nut Washing</h5>
+                        </div>
+                        <p class="card-text text-muted mb-4">Cleaning and preparation for drying process</p>
+                        <a href="{% url 'nut_washing' batch.pk %}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-arrow-right-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-start border-5 border-primary shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                <i class="bi bi-thermometer-sun fs-3"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Drying</h5>
+                        </div>
+                        <p class="card-text text-muted mb-4">Moisture removal and quality preservation</p>
+                        <a href="{% url 'drying' batch.pk %}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-arrow-right-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-start border-5 border-primary shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                <i class="bi bi-box-arrow-down fs-3"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Drier Offloading</h5>
+                        </div>
+                        <p class="card-text text-muted mb-4">Transfer of dried materials to next stage</p>
+                        <a href="{% url 'drier_offloading' batch.pk %}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-arrow-right-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-start border-5 border-primary shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                <i class="bi bi-hammer fs-3"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Cracking</h5>
+                        </div>
+                        <p class="card-text text-muted mb-4">Shell separation to access kernel contents</p>
+                        <a href="{% url 'cracking' batch.pk %}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-arrow-right-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-start border-5 border-primary shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                <i class="bi bi-funnel fs-3"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Inshell Sorting</h5>
+                        </div>
+                        <p class="card-text text-muted mb-4">Quality assessment and separation of shells</p>
+                        <a href="{% url 'inshell_sorting' batch.pk %}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-arrow-right-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-start border-5 border-primary shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                <i class="bi bi-grid-3x3-gap fs-3"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Kernel Sorting</h5>
+                        </div>
+                        <p class="card-text text-muted mb-4">Refined separation of kernel quality</p>
+                        <a href="{% url 'kernel_sorting' batch.pk %}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-arrow-right-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-start border-5 border-primary shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                <i class="bi bi-stars fs-3"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Grading</h5>
+                        </div>
+                        <p class="card-text text-muted mb-4">Quality classification and standardization</p>
+                        <a href="{% url 'grading' batch.pk %}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-arrow-right-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-start border-5 border-primary shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                <i class="bi bi-box-seam fs-3"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Packaging</h5>
+                        </div>
+                        <p class="card-text text-muted mb-4">Final preparation for distribution</p>
+                        <a href="{% url 'packaging' batch.pk %}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-arrow-right-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Original custom styles */
+    .pc-container {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    .pc-content {
+        padding-left: 5px !important;
+        padding-right: 20px !important;
+        padding-top: 5px !important;
+        padding-bottom: 20px !important;
+    }
+    .page-header {
+        margin-bottom: 3px !important;
+    }
+    .page-header .breadcrumb {
+        margin-bottom: 0 !important;
+    }
+
+    /* New styles for tabular layout */
+    .table-borderless tbody tr {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .table-borderless tbody tr:last-child {
+        border-bottom: 0;
+    }
+    .table-borderless th, .table-borderless td {
+        padding: 0.75rem 0.5rem; /* Standard padding */
+    }
+    .table-borderless th {
+        font-weight: 500;
+        /* No right padding needed here as the icon is in its own cell */
+    }
+    /* Specific styling for the icon column */
+    .table-borderless td.text-center {
+        padding-right: 0.25rem; /* Reduce padding to bring icon closer to text */
+    }
+
+
+    /* Additional enhancements */
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-3px);
+    }
+
+    /* Increased spacing for table columns */
+    .row.g-4 > [class*="col-"] {
+        padding-left: 1.5rem !important; /* Adjust as needed */
+        padding-right: 1.5rem !important; /* Adjust as needed */
+    }
+</style>
+{% endblock %}

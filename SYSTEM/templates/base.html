@@ -1,0 +1,381 @@
+{% load static %}
+<!doctype html>
+<html lang="en" data-pc-preset="preset-1" data-pc-sidebar-caption="true" data-pc-direction="ltr" dir="ltr" data-pc-theme="light">
+<head>
+  <title>{% block title %}TenSenses Factory{% endblock %}</title>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="description" content="TenSenses." />
+  <meta name="keywords" content="TenSenses" />
+  <meta name="author" content="Kenduiywo_codes" />
+
+  <link rel="icon" href="{% static 'inventory/assets/images/favicon.jpg' %}">
+
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  {# IMPORTANT: Bootstrap CSS should load BEFORE your custom style.css #}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+  {# Your custom icon and font stylesheets #}
+  <link rel="stylesheet" href="{% static 'inventory/assets/fonts/phosphor/duotone/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'inventory/assets/fonts/tabler-icons.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'inventory/assets/fonts/feather.css' %}" />
+  <link rel="stylesheet" href="{% static 'inventory/assets/fonts/fontawesome.css' %}" />
+  <link rel="stylesheet" href="{% static 'inventory/assets/fonts/material.css' %}" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  {# Your main custom theme stylesheet, loaded AFTER Bootstrap #}
+  <link rel="stylesheet" href="{% static 'inventory/assets/css/style.css' %}" id="main-style-link" />
+
+  <style>
+    /* Your existing custom inline styles for theme colors, preloader, header, sidebar, buttons, logo, etc. */
+    :root {
+      /* Updated brown theme colors */
+      --primary: #795548 !important;        /* Primary brown */
+      --primary-500: #5D4037 !important;    /* Darker brown */
+      --primary-600: #4E342E !important;    /* Even darker brown */
+      --primary-700: #3E2723 !important;    /* Darkest brown */
+      --primary-400: #8D6E63 !important;    /* Lighter brown */
+      --primary-300: #A1887F !important;    /* Light brown */
+
+      /* Additional theme adjustments */
+      --pc-theme: #EFEBE9 !important;       /* Light beige background */
+      --pc-sidebar-bg: #5D4037 !important;  /* Dark brown sidebar */
+      --pc-sidebar-color: #fff !important;  /* White text for sidebar */
+    }
+
+    /* Pre-loader styling */
+    .loader-bg {
+      background: #EFEBE9 !important;       /* Light beige background */
+    }
+    .loader-fill {
+      background: var(--primary) !important; /* Brown progress bar */
+    }
+
+    /* Header styling */
+    .pc-header {
+      background: #EFEBE9 !important;        /* Light beige background */
+      border-bottom: 1px solid #D7CCC8 !important; /* Light brown border */
+      display: flex;
+      height: 74px;
+      transition-property: all;
+      transition-duration: 200ms;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 1000; /* ensure it's on top */
+    }
+
+    /* Sidebar styling */
+    .pc-sidebar {
+      background: var(--pc-sidebar-bg) !important;
+      color: var(--pc-sidebar-color) !important;
+
+    }
+    .pc-item.pc-caption label {
+      color: #D7CCC8 !important;             /* Light brown caption text */
+    }
+    .pc-link {
+      color: #fff !important;
+    }
+    .pc-link:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* User dropdown styling */
+    .dropdown-user-profile .dropdown-header {
+      background: var(--primary-500) !important;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--primary) !important;
+      border-color: var(--primary-600) !important;
+    }
+    .btn-primary:hover {
+      background: var(--primary-600) !important;
+    }
+
+    /* === Custom Logo & Title Styling === */
+    /* Adjust padding for the header containing the logo */
+    .navbar-wrapper .m-header {
+        /* Default py-4 px-6 from Tailwind provides 1rem top/bottom, 1.5rem left/right */
+        /* You can adjust these if you need more space */
+        padding-top: 20px; /* Example: slightly more padding from the top */
+        padding-bottom: 15px; /* Adjust as needed */
+        padding-left: 20px; /* Adjust as needed */
+        /* Ensure logo area itself maintains consistent height if needed */
+        height: auto; /* Allow content to dictate height, or set a fixed value like 74px */
+    }
+
+    /* Ensure .b-brand is a flex container for horizontal alignment */
+    .b-brand {
+        display: flex;
+        align-items: center; /* Vertically center the logo and text */
+        gap: 10px; /* Space between the logo image and the text */
+        text-decoration: none; /* Remove underline from the link */
+        color: var(--pc-sidebar-color); /* Inherit color from sidebar for text */
+    }
+
+    /* Style the actual logo image (icon only) */
+    .b-brand .site-logo {
+        height: 40px; /* Adjust the height of your logo icon as needed */
+        width: auto; /* Maintain aspect ratio */
+        object-fit: contain; /* Ensures the image scales properly */
+    }
+
+    /* Style the site title text */
+    .b-brand .site-title {
+        font-size: 1.5rem; /* Adjust font size as desired */
+        font-weight: 600; /* Adjust font weight for boldness */
+        color: var(--pc-sidebar-color); /* White text for sidebar */
+        white-space: nowrap; /* Prevent text from wrapping */
+        line-height: 1; /* Adjust line height for better vertical alignment */
+    }
+    /* =================================== */
+  </style>
+</head>
+<script>
+  // Force light theme before other scripts load and apply previous settings
+  localStorage.setItem('pc-theme', 'light');
+  localStorage.setItem('layout_theme', 'light');
+  document.documentElement.setAttribute('data-pc-theme', 'light');
+</script>
+<body>
+  <div class="loader-bg fixed inset-0 bg-white dark:bg-themedark-cardbg z-[1034]">
+    <div class="loader-track h-[5px] w-full inline-block absolute overflow-hidden top-0">
+      <div class="loader-fill w-[300px] h-[5px] bg-primary-500 absolute top-0 left-0 animate-[hitZak_0.6s_ease-in-out_infinite_alternate]"></div>
+    </div>
+  </div>
+
+  <nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+      <div class="m-header flex items-center py-4 px-6 h-header-height">
+        <a href="{% url 'inventory_home' %}" class="b-brand">
+          {# Using log.jpg as per your existing code for the logo #}
+          <img src="{% static 'inventory/assets/images/log.jpg' %}" class="img-fluid1 site-logo" alt="TenSenses Factory Logo" />
+          <span class="site-title">TenSenses</span>
+        </a>
+      </div>
+
+      <div class="navbar-content h-[calc(100vh_-_74px)] py-2.5">
+        <ul class="pc-navbar">
+
+          <li class="pc-item pc-caption">
+            <label>Navigation</label>
+          </li>
+          <li class="pc-item">
+            <a href="{% url 'inventory_home' %}" class="pc-link">
+              <span class="pc-micon"><i data-feather="home"></i></span>
+              <span class="pc-mtext">Dashboard</span>
+            </a>
+          </li>
+
+          <li class="pc-item pc-caption">
+            <label>Field Work</label>
+            <i data-feather="map"></i>
+          </li>
+          <li class="pc-item">
+            <a href="{% url 'create_region' %}" class="pc-link">
+              <span class="pc-micon"><i data-feather="map"></i></span>
+              <span class="pc-mtext">Regions</span>
+            </a>
+          </li>
+          <li class="pc-item">
+            <a href="{% url 'create_store' %}" class="pc-link">
+              <span class="pc-micon"><i data-feather="archive"></i></span>
+              <span class="pc-mtext">Stores</span>
+            </a>
+          </li>
+          <li class="pc-item">
+            <a href="{% url 'create_field_officer' %}" class="pc-link">
+              <span class="pc-micon"><i data-feather="users"></i></span>
+              <span class="pc-mtext">Field Officers</span>
+            </a>
+          </li>
+
+          <li class="pc-item pc-caption">
+            <label>Access</label>
+            <i data-feather="lock"></i>
+          </li>
+          {# Conditional display for Login/Register links #}
+          {% if not user.is_authenticated %}
+            <li class="pc-item">
+              <a href="{% url 'login' %}" class="pc-link"> {# Removed target="_blank" as it's not typical for internal login #}
+                <span class="pc-micon"><i data-feather="log-in"></i></span>
+                <span class="pc-mtext">Login</span>
+              </a>
+            </li>
+            <li class="pc-item">
+              <a href="{% url 'register' %}" class="pc-link"> {# Removed target="_blank" #}
+                <span class="pc-micon"><i data-feather="user-plus"></i></span>
+                <span class="pc-mtext">Register</span>
+              </a>
+            </li>
+          {% else %}
+            {# If user is authenticated, you might show a profile link or hide these #}
+            {# For now, we'll just hide them as the header handles user info #}
+          {% endif %}
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <header class="pc-header">
+    <div class="header-wrapper flex max-sm:px-[15px] px-[25px] grow">
+      <div class="me-auto pc-mob-drp">
+        <ul class="inline-flex *:min-h-header-height *:inline-flex *:items-center">
+          <li class="pc-h-item pc-sidebar-collapse max-lg:hidden lg:inline-flex">
+            <a href="#" class="pc-head-link ltr:!ml-0 rtl:!mr-0" id="sidebar-hide">
+              <i data-feather="menu"></i>
+            </a>
+          </li>
+          <li class="pc-h-item pc-sidebar-popup lg:hidden">
+            <a href="#" class="pc-head-link ltr:!ml-0 rtl:!mr-0" id="mobile-collapse">
+              <i data-feather="menu"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="ms-auto">
+        <ul class="inline-flex *:min-h-header-height *:inline-flex *:items-center">
+          <li class="dropdown pc-h-item">
+            <a class="pc-head-link dropdown-toggle me-0" data-pc-toggle="dropdown" href="#" role="button">
+              <i data-feather="sun"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end pc-h-dropdown">
+              <a href="#!" class="dropdown-item" onclick="layout_change('dark')"><i data-feather="moon"></i><span>Dark</span></a>
+              <a href="#!" class="dropdown-item" onclick="layout_change('light')"><i data-feather="sun"></i><span>Light</span></a>
+              <a href="#!" class="dropdown-item" onclick="layout_change('light')"><i data-feather="settings"></i><span>Default</span></a>
+            </div>
+          </li>
+
+          <li class="dropdown pc-h-item header-user-profile">
+            <a class="pc-head-link dropdown-toggle arrow-none me-0" data-pc-toggle="dropdown" href="#" role="button">
+              <i data-feather="user"></i>
+            </a>
+            <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown p-2 overflow-hidden">
+              <div class="dropdown-header flex items-center justify-between py-4 px-5 bg-primary-500">
+                <div class="flex mb-1 items-center">
+                  <div class="shrink-0">
+                    {# User avatar - you might want to use a dynamic avatar here later #}
+                    <img src="{% static 'inventory/assets/images/user/avatar-2.jpg' %}" alt="user-image" class="w-10 rounded-full" />
+                  </div>
+                  <div class="grow ms-3">
+                    {# Display logged-in user's full name and email #}
+                    {% if user.is_authenticated %}
+                      <h6 class="mb-1 text-white">{{ user.full_name|default:user.email }} 🖖</h6> {# Use full_name, fallback to email #}
+                      <span class="text-white">{{ user.email }}</span>
+                    {% else %}
+                      <h6 class="mb-1 text-white">Guest User 🖖</h6>
+                      <span class="text-white">Not Logged In</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="dropdown-body py-4 px-5">
+                {# Change Password Link #}
+                {% if user.is_authenticated %}
+                  <a href="{% url 'password_change' %}" class="dropdown-item"><i data-feather="lock"></i><span>Change Password</span></a>
+                {% endif %}
+
+                <div class="grid my-3">
+                  {# Logout Button (wrapped in a form for POST request and CSRF protection) #}
+                  {% if user.is_authenticated %}
+                    <form action="{% url 'logout' %}" method="post" class="d-grid">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-primary flex items-center justify-center">
+                        <i data-feather="log-out"></i>
+                        Logout
+                      </button>
+                    </form>
+                  {% else %}
+                    {# If not logged in, you might show a login button here instead #}
+                    <a href="{% url 'login' %}" class="btn btn-primary flex items-center justify-center">
+                        <i data-feather="log-in"></i>
+                        Login
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <div class="pc-container">
+    <div class="pc-content">
+      {# IMPORTANT: This is the ONLY place where messages should be displayed #}
+      <div class="container-fluid mt-3">
+          {% if messages %}
+              {% for message in messages %}
+                  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+              {% endfor %}
+          {% endif %}
+      </div>
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  {# IMPORTANT: Bootstrap JavaScript should load here, at the end of body #}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  {# Your existing custom JS files #}
+  <script src="{% static 'inventory/assets/js/plugins/simplebar.min.js' %}" defer></script> {# Added defer #}
+  <script src="{% static 'inventory/assets/js/plugins/popper.min.js' %}" defer></script> {# Added defer #}
+  <script src="{% static 'inventory/assets/js/icon/custom-icon.js' %}" defer></script> {# Added defer #}
+  <script src="{% static 'inventory/assets/js/plugins/feather.min.js' %}" defer></script> {# Added defer #}
+  <script src="{% static 'inventory/assets/js/component.js' %}" defer></script> {# Added defer #}
+  <script src="{% static 'inventory/assets/js/theme.js' %}" defer></script> {# Added defer #}
+  <script src="{% static 'inventory/assets/js/script.js' %}" defer></script> {# Added defer #}
+
+  <script>
+    // These functions should ideally be called after the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        layout_change('false');
+        layout_theme_sidebar_change('light');
+        change_box_container('false');
+        layout_caption_change('true');
+        layout_rtl_change('false');
+        preset_change('preset-1');
+        main_layout_change('vertical');
+
+        // Initialize Feather icons after they are loaded
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    });
+  </script>
+
+  {# Script to auto-hide alerts after 3 seconds #}
+  <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          setTimeout(function() {
+              var alerts = document.querySelectorAll('.alert');
+              alerts.forEach(function(alert) {
+                  if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                      var bsAlert = bootstrap.Alert.getInstance(alert);
+                      if (!bsAlert) { // If no instance exists, create one
+                          bsAlert = new bootstrap.Alert(alert);
+                      }
+                      bsAlert.close();
+                  } else {
+                      alert.style.display = 'none'; // Fallback for non-Bootstrap alerts
+                  }
+              });
+          }, 3000); // 3000 milliseconds = 3 seconds
+      });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+{#{% extends 'base.html' %}#}
+{#{% block content %}#}
+{#<h2>Field Officer Averages – Batch {{ batch_id }}</h2>#}
+{##}
+{#{% if fo_data %}#}
+{#<table border="1">#}
+{#    <thead>#}
+{#        <tr>#}
+{#            <th>Metric</th>#}
+{#            {% for fo in fo_data %}#}
+{#                <th>{{ fo.name }}</th>#}
+{#            {% endfor %}#}
+{#        </tr>#}
+{#        <tr>#}
+{#            <th>Region</th>#}
+{#            {% for fo in fo_data %}#}
+{#                <th>{{ fo.region }}</th>#}
+{#            {% endfor %}#}
+{#        </tr>#}
+{#    </thead>#}
+{#    <tbody>#}
+{#        {% for label, key in [#}
+{#            ("Good Q", "good_q"),#}
+{#            ("Insect Damaged", "insect_damaged"),#}
+{#            ("Mold", "mold"),#}
+{#            ("Immature", "immature"),#}
+{#            ("Weight", "weight"),#}
+{#            ("SKR", "skr"),#}
+{#            ("Moisture", "moisture"),#}
+{#        ] %}#}
+{#        <tr>#}
+{#            <td><strong>{{ label }}</strong></td>#}
+{#            {% for fo in fo_data %}#}
+{#                <td>{{ fo.averages.key|default_if_none:"0.00"|floatformat:2 }}</td>#}
+{#            {% endfor %}#}
+{#        </tr>#}
+{#        {% endfor %}#}
+{#    </tbody>#}
+{#</table>#}
+{#{% else %}#}
+{#    <p>No data available for this batch.</p>#}
+{#{% endif %}#}
+{##}
+{#<a href="{% url 'batch_detail' pk=batch_id %}">← Back to Batch</a>#}
+{#{% endblock %}#}
+
+<h2>Field Officers' Averages – Batch {{ batch.batch_number }}</h2>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Metric</th>
+            {% for fo in field_officers %}
+                <th>{{ fo }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            <th>Region</th>
+            {% for fo in field_officers %}
+                <th>{{ regions.get(fo, "") }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for metric, values in averages.items %}
+        <tr>
+            <td>{{ metric }}</td>
+            {% for fo in field_officers %}
+                <td>{{ values.get(fo) }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br>
+
+<a href="{% url 'download_fo_averages_excel' batch_id=batch.id %}">
+    <button>⬇ Download Excel Report</button>
+</a>

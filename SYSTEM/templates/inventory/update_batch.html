@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+{% block title %}Update Batch - {{ batch.batch_number }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="pc-content">
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'inventory_home' %}">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'batch_list' %}">Receiving Batches</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Update Batch: {{ batch.batch_number }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container card shadow-lg p-4">
+            <h2 class="mb-4 text-center text-primary fw-bold">
+                Update Batch <span class="text-secondary">#{{ batch.batch_number }}</span>
+            </h2>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    <h5 class="alert-heading">Form Errors:</h5>
+                    <ul class="mb-0">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.certification.id_for_label }}" class="form-label fw-bold">Certification</label>
+                    {{ form.certification|add_class:"form-control" }}
+                    {% for error in form.certification.errors %}
+                        <div class="text-danger mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.lot_number.id_for_label }}" class="form-label fw-bold">Lot Number</label>
+                    {{ form.lot_number|add_class:"form-control" }}
+                    {% for error in form.lot_number.errors %}
+                        <div class="text-danger mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="id_drier_number" class="form-label fw-bold">Drier Number (1–32)</label>
+                    <input type="number" name="drier_number" id="id_drier_number"
+                           value="{{ form.drier_number.value|default_if_none:'' }}" min="1" max="32"
+                           required class="form-control">
+                    {% for error in form.drier_number.errors %}
+                        <div class="text-danger mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.driver_name.id_for_label }}" class="form-label fw-bold">Driver Name</label>
+                    {{ form.driver_name|add_class:"form-control" }}
+                    {% for error in form.driver_name.errors %}
+                        <div class="text-danger mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="{{ form.vehicle_registration.id_for_label }}" class="form-label fw-bold">Vehicle Registration</label>
+                    {{ form.vehicle_registration|add_class:"form-control" }}
+                    {% for error in form.vehicle_registration.errors %}
+                        <div class="text-danger mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-end gap-3">
+                    <button type="submit" class="btn btn-primary px-4 py-2">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Update Batch
+                    </button>
+                    <a href="{% url 'batch_list' %}" class="btn btn-secondary px-4 py-2">
+                        <i class="bi bi-x-lg me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

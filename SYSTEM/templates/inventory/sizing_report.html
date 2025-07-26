@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load inventory_extras %}
+
+{% block title %}Sizing Report for Batch {{ batch.batch_number }}{% endblock %}
+
+{% block content %}
+<style>
+    .sizing-report-table th,
+    .sizing-report-table td {
+        border: 1px solid #dee2e6;
+        padding: 8px 12px;
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .sizing-report-table thead th {
+        background-color: #e9ecef;
+        font-weight: bold;
+        color: #495057;
+        border-bottom: 2px solid #adb5bd;
+    }
+
+    .sizing-report-table .fo-header {
+        background-color: #FFFF00;
+        font-weight: bold;
+    }
+
+    .sizing-report-table .average-column {
+        background-color: #FFFF00;
+        font-weight: bold;
+    }
+
+    .sizing-report-table .sizing-label-col {
+        text-align: left;
+        font-weight: bold;
+        background-color: #f8f9fa;
+    }
+</style>
+
+<h2>Sizing Report for Batch {{ batch.batch_number }}</h2>
+
+{% if field_officer_names %}
+<div class="table-responsive sizing-report-table">
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2">FO</th>
+                {% for fo_name in field_officer_names %}
+                    <th colspan="{{ max_sizing_samples_per_fo }}" class="fo-header">{{ fo_name }}</th>
+                {% endfor %}
+                <th rowspan="2" class="average-column">Average</th>
+            </tr>
+            <tr>
+                {% for fo_name in field_officer_names %}
+                    {% with fo_current_data=fo_sizing_data|get_item:fo_name %}
+                        {% for sample in fo_current_data.samples %}
+                            <th>{{ sample.sample_num }}</th>
+                        {% endfor %}
+                        {% for i in fo_current_data.samples|length|add:"0"|add:"-"|add:max_sizing_samples_per_fo %}
+                            <th></th>
+                        {% endfor %}
+                    {% endwith %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+{#    {% for size_key, label in 'size_0,size_1l,size_1s,size_1xs'|cut:','|slugify %}  {# Just a loop hint if needed #}
+{#    {% endfor %}#}
+
+    <tr>
+        <td class="sizing-label-col">0</td>
+        {% for fo_name in field_officer_names %}
+            {% with fo_current_data=fo_sizing_data|get_item:fo_name %}
+                {% for sample in fo_current_data.samples %}
+                    <td>{{ sample.size_0|floatformat:2 }}</td>
+                {% endfor %}
+                {% with current_fo_samples=fo_current_data.samples|length %}
+                    {% if current_fo_samples < max_sizing_samples_per_fo %}
+                        {% for i in ""|ljust:max_sizing_samples_per_fo|slice:current_fo_samples %}
+                            <td></td>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            {% endwith %}
+        {% endfor %}
+        <td class="average-column">{{ grand_sizing_averages.size_0|floatformat:2 }}</td>
+    </tr>
+
+    <tr>
+        <td class="sizing-label-col">1L</td>
+        {% for fo_name in field_officer_names %}
+            {% with fo_current_data=fo_sizing_data|get_item:fo_name %}
+                {% for sample in fo_current_data.samples %}
+                    <td>{{ sample.size_1l|floatformat:2 }}</td>
+                {% endfor %}
+                {% with current_fo_samples=fo_current_data.samples|length %}
+                    {% if current_fo_samples < max_sizing_samples_per_fo %}
+                        {% for i in ""|ljust:max_sizing_samples_per_fo|slice:current_fo_samples %}
+                            <td></td>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            {% endwith %}
+        {% endfor %}
+        <td class="average-column">{{ grand_sizing_averages.size_1l|floatformat:2 }}</td>
+    </tr>
+
+    <tr>
+        <td class="sizing-label-col">1S</td>
+        {% for fo_name in field_officer_names %}
+            {% with fo_current_data=fo_sizing_data|get_item:fo_name %}
+                {% for sample in fo_current_data.samples %}
+                    <td>{{ sample.size_1s|floatformat:2 }}</td>
+                {% endfor %}
+                {% with current_fo_samples=fo_current_data.samples|length %}
+                    {% if current_fo_samples < max_sizing_samples_per_fo %}
+                        {% for i in ""|ljust:max_sizing_samples_per_fo|slice:current_fo_samples %}
+                            <td></td>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            {% endwith %}
+        {% endfor %}
+        <td class="average-column">{{ grand_sizing_averages.size_1s|floatformat:2 }}</td>
+    </tr>
+
+    <tr>
+        <td class="sizing-label-col">1XS</td>
+        {% for fo_name in field_officer_names %}
+            {% with fo_current_data=fo_sizing_data|get_item:fo_name %}
+                {% for sample in fo_current_data.samples %}
+                    <td>{{ sample.size_1xs|floatformat:2 }}</td>
+                {% endfor %}
+                {% with current_fo_samples=fo_current_data.samples|length %}
+                    {% if current_fo_samples < max_sizing_samples_per_fo %}
+                        {% for i in ""|ljust:max_sizing_samples_per_fo|slice:current_fo_samples %}
+                            <td></td>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            {% endwith %}
+        {% endfor %}
+        <td class="average-column">{{ grand_sizing_averages.size_1xs|floatformat:2 }}</td>
+    </tr>
+</tbody>
+
+    </table>
+</div>
+{% else %}
+    <p>No sizing data available for this batch.</p>
+{% endif %}
+
+<a href="{% url 'download_sizing_data_excel' batch.id %}" class="btn btn-success mt-3">
+    Download Sizing Report Excel
+</a>
+
+<p><a href="{% url 'batch_detail' batch.id %}" class="btn btn-secondary mt-3">Back to Receiving Details</a></p>
+{% endblock %}

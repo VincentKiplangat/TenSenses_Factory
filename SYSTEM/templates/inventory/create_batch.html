@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create New Batch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'inventory/assets/css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+  <h2 class="mb-4">Create New Batch</h2>
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      {% for error in form.non_field_errors %}
+        <div>{{ error }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="POST" class="bg-white p-4 rounded shadow-sm">
+    {% csrf_token %}
+
+    <div class="form-group mb-3">
+      <label for="{{ form.certification.id_for_label }}">Certification</label>
+      {{ form.certification }}
+      {% for error in form.certification.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.lot_number.id_for_label }}">Lot Number</label>
+      {{ form.lot_number }}
+      {% for error in form.lot_number.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.drier_number.id_for_label }}">Drier Number (1–32)</label>
+      {{ form.drier_number }}
+      {% for error in form.drier_number.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.driver_name.id_for_label }}">Transporter</label>
+      {{ form.driver_name }}
+      {% for error in form.driver_name.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.vehicle_registration.id_for_label }}">Vehicle Registration</label>
+      {{ form.vehicle_registration }}
+      {% for error in form.vehicle_registration.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.no_of_bags.id_for_label }}">Number of Bags Received</label>
+      {{ form.no_of_bags }}
+      {% for error in form.no_of_bags.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-group mb-4">
+      <label for="{{ form.total_quantity_received.id_for_label }}">Total Quantity Received (Kg)</label>
+      {{ form.total_quantity_received }}
+      {% for error in form.total_quantity_received.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-actions d-flex justify-content-between">
+      <button type="submit" class="btn btn-success">Save Batch</button>
+      <a href="{% url 'batch_list' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

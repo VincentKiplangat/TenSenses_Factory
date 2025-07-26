@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}TenSenses Factory Dashboard{% endblock %}
+
+{% block content %}
+{# The pc-container and pc-content divs are already handled by your base.html #}
+{# and provide the overall structure and padding. #}
+
+{# Removed the <div class="col-md-10 col-xl-9"> wrapper to allow full width #}
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-light border-bottom">
+    <h4 class="mb-0 text-dark">
+      <i class="bi bi-box-seam-fill me-2 text-primary" ></i> Receiving Batches
+    </h4>
+  </div>
+
+  <div class="card-body">
+
+    <form method="get" class="row mb-4"> {# Removed g-2 for tighter spacing #}
+  <div class="col-md-4"> {# Changed to col-md-4 to make columns sum to 12 #}
+    <input type="text" name="q" class="form-control" placeholder="Search (Batch, Store, Region)" value="{{ query }}">
+  </div>
+  <div class="col-md-2">
+    <select name="certification" class="form-select">
+      <option value="">All Certifications</option>
+      <option value="ORG" {% if cert_filter == 'ORG' %}selected{% endif %}>ORG</option>
+      <option value="CON" {% if cert_filter == 'CON' %}selected{% endif %}>CON</option>
+    </select>
+  </div>
+  <div class="col-md-2">
+    <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+  </div>
+  <div class="col-md-2">
+    <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+  </div>
+  <div class="col-md-2 d-grid">
+    <button type="submit" class="btn btn-primary">Filter</button>
+  </div>
+</form>
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+      <div class="text-muted">
+        Showing {{ batches.paginator.count }} result{{ batches.paginator.count|pluralize }}
+      </div>
+      <a href="{% url 'create_batch' %}" class="btn btn-success d-inline-flex align-items-center">
+        <i class="bi bi-plus-circle me-2"></i> Create New Batch
+      </a>
+    </div>
+
+    {% if batches %}
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 40%;">Batch</th>
+            <th style="width: 30%;">Date Received</th>
+            <th style="width: 30%;" class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for batch in batches %}
+          <tr>
+            <td>
+              <code class="text-monospace bg-light border rounded px-2 py-1 cursor-pointer"
+                    onclick="navigator.clipboard.writeText('{{ batch.batch_number }}')"
+                    title="Click to copy Batch Number">
+                {{ batch.batch_number }}
+              </code>
+            </td>
+            <td>
+              <i class="bi bi-calendar-event me-1"></i>
+              {{ batch.created_at|date:"F d, Y" }}
+            </td>
+            <td class="text-end">
+              <div class="d-flex justify-content-end align-items-center gap-2 flex-wrap">
+                <a href="{% url 'batch_detail' batch.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                <a href="{% url 'update_batch' batch.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                <form action="{% url 'delete_batch' batch.pk %}" method="post"
+                      onsubmit="return confirm('Are you sure you want to delete Batch {{ batch.batch_number }}?');"
+                      class="d-inline-block">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if batches.has_other_pages %}
+    <nav class="mt-4">
+      <ul class="pagination justify-content-center">
+        {% if batches.has_previous %}
+        <li class="page-item">
+          <a class="page-link"
+             href="?page={{ batches.previous_page_number }}&q={{ query }}&certification={{ cert_filter }}&date_from={{ date_from }}&date_to={{ date_to }}">Previous</a>
+        </li>
+        {% endif %}
+        <li class="page-item disabled">
+          <span class="page-link">Page {{ batches.number }} of {{ batches.paginator.num_pages }}</span>
+        </li>
+        {% if batches.has_next %}
+        <li class="page-item">
+          <a class="page-link"
+             href="?page={{ batches.next_page_number }}&q={{ query }}&certification={{ cert_filter }}&date_from={{ date_from }}&date_to={{ date_to }}">Next</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="alert alert-info text-center mt-4" role="alert">
+      No batches have been recorded yet. Click <strong>"Create New Batch"</strong> to add your first one!
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('code[onclick]').forEach(el => {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => {
+      const original = el.textContent;
+      el.textContent = 'Copied!';
+      el.classList.add('bg-success', 'text');
+      el.classList.remove('bg-light');
+
+      setTimeout(() => {
+        el.textContent = original;
+        el.classList.remove('bg-success', 'text');
+        el.classList.add('bg-light');
+      }, 1000);
+    });
+  });
+</script>
+{% endblock %}

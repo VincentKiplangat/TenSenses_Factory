@@ -1,0 +1,264 @@
+{# inventory/templates/inventory/create_field_officer.html #}
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Field Officer Management{% endblock %}
+
+{% block page_title %}Field Officer Management{% endblock %}
+
+{% block breadcrumbs %}
+    <li class="breadcrumb-item"><a href="#">Settings</a></li>
+    <li class="breadcrumb-item">Field Officers</li>
+{% endblock %}
+
+{% block content %}
+{# The general Django messages block is handled in base.html ONLY #}
+
+<div class="row">
+    {# This column will now always take full width, forcing content below it #}
+    <div class="col-12"> {# Changed to col-12 #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% if edit_id %}Edit Field Officer{% else %}Add New Field Officer{% endif %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {# Non-field errors (e.g., "The provided code is already in use") #}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <ul class="list-unstyled mb-0">
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    {% if edit_id and edit_form and edit_form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <ul class="list-unstyled mb-0">
+                                {% for error in edit_form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if edit_id %}
+                        {# Editing an existing field officer #}
+                        <input type="hidden" name="fo_id" value="{{ edit_id }}">
+
+                        <div class="mb-3">
+                            <label for="{{ edit_form.name.id_for_label }}" class="form-label">{{ edit_form.name.label }}</label>
+                            <input type="text" name="{{ edit_form.name.name }}" id="{{ edit_form.name.id_for_label }}"
+                                   value="{{ edit_form.name.value|default_if_none:'' }}"
+                                   class="form-control {% if edit_form.name.errors %}is-invalid{% endif %}" required>
+                            {% if edit_form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in edit_form.name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {# THIS IS THE FIELD OFFICER CODE INPUT FIELD FOR EDITING - LABEL HARDCODED #}
+                        <div class="mb-3">
+                            <label for="{{ edit_form.field_officer_code.id_for_label }}" class="form-label">Field Officer Code</label>
+                            <input type="text" name="{{ edit_form.field_officer_code.name }}" id="{{ edit_form.field_officer_code.id_for_label }}"
+                                   value="{{ edit_form.field_officer_code.value|default_if_none:'' }}"
+                                   class="form-control {% if edit_form.field_officer_code.errors %}is-invalid{% endif %}" required>
+                            {% if edit_form.field_officer_code.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in edit_form.field_officer_code.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% else %}
+                                {# Added help text for clarity #}
+                                <div class="form-text">A unique code for the Field Officer (e.g., FO001).</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ edit_form.store.id_for_label }}" class="form-label">{{ edit_form.store.label }}</label>
+                            <select name="{{ edit_form.store.name }}" id="{{ edit_form.store.id_for_label }}"
+                                    class="form-select {% if edit_form.store.errors %}is-invalid{% endif %}" required>
+                                {% for value, text in edit_form.store.field.choices %}
+                                    <option value="{{ value }}" {% if edit_form.store.value == value %}selected{% endif %}>{{ text }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if edit_form.store.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in edit_form.store.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex mt-4">
+                            <button type="submit" name="update_fo" class="btn btn-warning me-2">
+                                <i class="ti ti-edit me-1"></i> Update Field Officer
+                            </button>
+                            <a href="{% url 'create_field_officer' %}{% if selected_store %}&store_filter={{ selected_store }}{% endif %}{% if search_query %}{% if selected_store %}&{% else %}?{% endif %}search={{ search_query }}{% endif %}" class="btn btn-secondary">
+                                <i class="ti ti-x me-1"></i> Cancel
+                            </a>
+                        </div>
+                    {% else %}
+                        {# Adding a new region #}
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                            <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}"
+                                   value="{{ form.name.value|default_if_none:'' }}"
+                                   class="form-control {% if form.name.errors %}is-invalid{% endif %}" required>
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {# THIS IS THE FIELD OFFICER CODE INPUT FIELD FOR ADDING - LABEL HARDCODED #}
+                        <div class="mb-3">
+                            <label for="{{ form.field_officer_code.id_for_label }}" class="form-label">Field Officer Code</label>
+                            <input type="text" name="{{ form.field_officer_code.name }}" id="{{ form.field_officer_code.id_for_label }}"
+                                   value="{{ form.field_officer_code.value|default_if_none:'' }}"
+                                   class="form-control {% if form.field_officer_code.errors %}is-invalid{% endif %}" required>
+                            {% if form.field_officer_code.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.field_officer_code.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% else %}
+                                {# Added help text for clarity #}
+                                <div class="form-text">A unique code for the Field Officer (e.g., FO001).</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.store.id_for_label }}" class="form-label">{{ form.store.label }}</label>
+                            <select name="{{ form.store.name }}" id="{{ form.store.id_for_label }}"
+                                    class="form-select {% if form.store.errors %}is-invalid{% endif %}" required>
+                                <option value="">Select Store</option>
+                                {% for value, text in form.store.field.choices %}
+                                    <option value="{{ value }}" {% if value == form.store.value %}selected{% endif %}>{{ text }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.store.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.store.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" name="save_fo" class="btn btn-success">
+                                <i class="ti ti-plus me-1"></i> Add Field Officer
+                            </button>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# This column will also always take full width, appearing below the first col-12 #}
+    <div class="col-12"> {# Changed to col-12 #}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Existing Field Officers</h5>
+            </div>
+            <div class="card-body">
+                {# Filter Form for the Field Officer List #}
+                <form method="GET" class="mb-4">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <label for="storeFilter" class="form-label">Filter by Store:</label>
+                            <select class="form-select" id="storeFilter" name="store_filter">
+                                <option value="">All Stores</option>
+                                {% for store in stores_for_filter %}
+                                    <option value="{{ store.id }}" {% if selected_store|default_if_none:'' == store.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ store.name }} ({{ store.region.name }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="searchFieldOfficer" class="form-label">Search Officer Name:</label>
+                            <input type="text" class="form-control" id="searchFieldOfficer" name="search" placeholder="Enter officer name..." value="{{ search_query|default_if_none:'' }}">
+                        </div>
+                        <div class="col-12 d-flex justify-content-between align-items-center mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ti ti-filter me-1"></i> Apply Filters
+                            </button>
+                            {% if selected_store or search_query %}
+                                <a href="{% url 'create_field_officer' %}" class="btn btn-outline-secondary">
+                                    <i class="ti ti-x me-1"></i> Clear Filters
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Code</th> {# ADDED COLUMN HEADER FOR CODE #}
+                                <th>Assigned Store</th>
+                                <th>Region</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fo in field_officers %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ fo.name }}</td>
+                                <td>{{ fo.field_officer_code }}</td> {# DISPLAY THE CODE IN THE TABLE #}
+                                <td>{{ fo.store.name }}</td>
+                                <td>{{ fo.store.region.name }}</td>
+                                <td class="text-center">
+                                    <a href="?edit_id={{ fo.id }}{% if selected_store %}&store_filter={{ selected_store }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                        <i class="ti ti-pencil"></i>
+                                    </a>
+                                    {# REINSTATED: Bootstrap Modal Trigger for Delete #}
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteFOModal-{{ fo.id }}">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+
+                                    {# REINSTATED: Delete Confirmation Modal for Field Officer #}
+                                    <div class="modal fade" id="deleteFOModal-{{ fo.id }}" tabindex="-1" aria-labelledby="deleteFOModalLabel-{{ fo.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteFOModalLabel-{{ fo.id }}">Confirm Deletion</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Are you sure you want to delete Field Officer: <strong>{{ fo.name }} ({{ fo.field_officer_code }})</strong>?
+                                                    <p class="text-danger mt-2">This action cannot be undone.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form action="{% url 'delete_field_officer' fo.id %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}" method="post" class="d-inline-block">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No field officers found.</td> {# Updated colspan #}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

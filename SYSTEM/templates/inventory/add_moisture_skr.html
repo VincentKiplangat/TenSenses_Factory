@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% block title %}SKR With Moisture - {{ batch.batch_number }}{% endblock %}
+
+{% block content %}
+<div class="pc-container">
+    {# Adjusting padding/margins for pc-content to reduce left space #}
+    <div class="pc-content pl-4 pr-4 sm:pl-6 sm:pr-6 lg:pl-8 lg:pr-8 mx-auto max-w-full">
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'inventory_home' %}">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'batch_detail' pk=batch.pk %}">Batch {{ batch.batch_number }}</a></li>
+                            <li class="breadcrumb-item" aria-current="page">Add SKR</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# The form-container itself will define its max-width and left-alignment within pc-content #}
+        <div class="form-container max-w-4xl ml-0 mr-auto px-0 pt-4 pb-8">
+            <h2>SKR With Moisture – Batch {{ batch.batch_number }}</h2>
+
+            {# Region, Store, FO - These will be horizontal within a flex container #}
+            <div class="flex flex-wrap gap-4 mb-6"> {# Use flexbox for horizontal layout #}
+                <div class="form-group flex-1 min-w-[200px]"> {# flex-1 to distribute space, min-w for responsiveness #}
+                    <label for="region" class="block text-gray-700 text-sm font-bold mb-2">Region:</label>
+                    <select id="region" class="form-control w-full">
+                        <option value="">Select Region</option>
+                        {% for region in regions %}
+                            <option value="{{ region.id }}">{{ region.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group flex-1 min-w-[200px]">
+                    <label for="store" class="block text-gray-700 text-sm font-bold mb-2">Store:</label>
+                    <select id="store" class="form-control w-full" disabled>
+                        <option value="">Select Store</option>
+                    </select>
+                </div>
+
+                <div class="form-group flex-1 min-w-[200px]">
+                    <label for="fo" class="block text-gray-700 text-sm font-bold mb-2">Field Officer:</label>
+                    <select id="fo" class="form-control w-full" disabled>
+                        <option value="">Select Field Officer</option>
+                    </select>
+                </div>
+            </div>
+{% if errors %}
+    <div class="alert alert-danger bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        <strong class="block font-bold mb-2">⚠️ Please fix the following errors:</strong>
+        <ul class="list-disc pl-5 space-y-1">
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+            <hr class="my-6 border-gray-300">
+
+            <form method="post" id="sampleForm">
+                {% csrf_token %}
+                <input type="hidden" name="batch_id" value="{{ batch.id }}">
+                <input type="hidden" name="fo" id="selected_fo">
+
+                <div id="samples-container">
+                    {# Sample input blocks will be inserted here by JavaScript #}
+                </div>
+
+                <div class="form-actions mt-6 flex justify-content-lg-center gap-3"> {# Changed to flex for proper button spacing #}
+                    <button type="button" onclick="addSampleRow()" class="btn btn-primary">➕ Add Sample</button>
+                    <button type="submit" class="btn btn-secondary">✅ Submit Samples</button>
+                </div>
+            </form>
+
+            <div class="mt-6 text-center">
+                <a href="{% url 'batch_detail' pk=batch.pk %}" class="btn btn-secondary-outline"> 🔙 Back to Batch Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+let sampleCount = 0;
+
+function addSampleRow() {
+    sampleCount++;
+    const sampleBlock = `
+        <div class="sample-block border border-gray-300 p-4 mb-6 rounded-md bg-white shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Sample #${sampleCount}</h3>
+                <button type="button" onclick="removeSampleRow(this)" class="btn btn-sm btn-danger">❌ Remove Sample</button>
+            </div>
+            <input type="hidden" name="sample_number[]" value="${sampleCount}">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="form-group"><label>Good Quality:</label>
+                    <input type="number" name="good_q[]" step="0.01" class="form-control w-full quality-input" oninput="calcSKR(this);" required>
+                </div>
+                <div class="form-group"><label>Insect Damaged:</label>
+                    <input type="number" name="insect_damaged[]" step="0.01" class="form-control w-full quality-input" required>
+                </div>
+                <div class="form-group"><label>Mold:</label>
+                    <input type="number" name="mold[]" step="0.01" class="form-control w-full quality-input" required>
+                </div>
+                <div class="form-group"><label>Immature:</label>
+                    <input type="number" name="immature[]" step="0.01" class="form-control w-full quality-input" required>
+                </div>
+                <div class="form-group"><label>Weight:</label>
+                    <input type="number" name="weight[]" step="0.01" class="form-control w-full" required>
+                </div>
+                <div class="form-group"><label>Moisture:</label>
+                    <input type="number" name="moisture[]" step="0.01" class="form-control w-full" required>
+                </div>
+                <div class="form-group"><label>Spillage:</label>
+                    <input type="number" name="spillage[]" step="0.01" class="form-control w-full" value="0" required>
+                </div>
+                <div class="form-group"><label>SKR (Auto):</label>
+                    <input type="text" readonly class="form-control w-full bg-gray-100 skr-output">
+                </div>
+            </div>
+        </div>`;
+    $('#samples-container').append(sampleBlock);
+    updateSampleNumbers();
+}
+
+function removeSampleRow(btn) {
+    $(btn).closest('.sample-block').remove();
+    updateSampleNumbers();
+}
+
+function updateSampleNumbers() {
+    sampleCount = 0;
+    $('#samples-container .sample-block').each(function () {
+        sampleCount++;
+        $(this).find('h3').text(`Sample #${sampleCount}`);
+        $(this).find('input[name="sample_number[]"]').val(sampleCount);
+    });
+}
+
+function calcSKR(input) {
+    const block = $(input).closest('.sample-block');
+    const goodQ = parseFloat(block.find('input[name="good_q[]"]').val()) || 0;
+    block.find('.skr-output').val((goodQ / 5).toFixed(2));
+}
+
+// ✅ Final validation before form submit
+$('#sampleForm').submit(function (e) {
+    const foId = $('#fo').val();
+    if (!foId) {
+        alert('⚠️ Please select a Field Officer before submitting.');
+        e.preventDefault();
+        return;
+    }
+    $('#selected_fo').val(foId);
+
+    let hasError = false;
+
+    $('.sample-block').each(function (index) {
+        const goodQ = parseFloat($(this).find('input[name="good_q[]"]').val()) || 0;
+        const insect = parseFloat($(this).find('input[name="insect_damaged[]"]').val()) || 0;
+        const mold = parseFloat($(this).find('input[name="mold[]"]').val()) || 0;
+        const immature = parseFloat($(this).find('input[name="immature[]"]').val()) || 0;
+
+        const total = goodQ + insect + mold + immature;
+
+        // Reset red styling
+        $(this).find('input[name="good_q[]"], input[name="insect_damaged[]"], input[name="mold[]"], input[name="immature[]"]')
+               .removeClass('border-red-500');
+
+        if (Math.abs(total - 100) > 0.01) {
+            hasError = true;
+
+            $(this).find('input[name="good_q[]"], input[name="insect_damaged[]"], input[name="mold[]"], input[name="immature[]"]')
+                   .addClass('border-red-500');
+
+            alert(`⚠️ Sample #${index + 1} quality adds up to ${total.toFixed(2)}%. It must be exactly 100%.`);
+        }
+    });
+
+    if (hasError) {
+        e.preventDefault();
+    }
+});
+
+// ✅ AJAX: Region → Store
+$(document).on('change', '#region', function () {
+    const regionId = $(this).val();
+    $('#store').prop('disabled', true).empty().append('<option value="">Loading...</option>');
+    $('#fo').prop('disabled', true).empty();
+
+    if (regionId) {
+        $.get(`/inventory/ajax/get-stores/${regionId}/`, function (data) {
+            $('#store').empty().append('<option value="">Select Store</option>');
+            data.forEach(store => {
+                $('#store').append(`<option value="${store.id}">${store.name}</option>`);
+            });
+            $('#store').prop('disabled', false);
+        });
+    }
+});
+
+// ✅ AJAX: Store → Field Officers
+$(document).on('change', '#store', function () {
+    const storeId = $(this).val();
+    $('#fo').prop('disabled', true).empty().append('<option value="">Loading...</option>');
+
+    if (storeId) {
+        $.get(`/inventory/ajax/get-field-officers/${storeId}/`, function (data) {
+            $('#fo').empty().append('<option value="">Select FO</option>');
+            data.forEach(fo => {
+                $('#fo').append(`<option value="${fo.id}">${fo.name}</option>`);
+            });
+            $('#fo').prop('disabled', false);
+        });
+    }
+});
+
+// ✅ Set selected FO into hidden input
+$(document).on('change', '#fo', function () {
+    const foId = $(this).val();
+    $('#selected_fo').val(foId);
+});
+
+// ✅ Add initial sample on load
+$(document).ready(function () {
+    addSampleRow();
+});
+</script>
+
+
+<style>
+.border-red-500 {
+    border: 2px solid #f87171 !important;
+    background-color: #fff1f2 !important;
+}
+
+</style>
+
+
+{% endblock %}

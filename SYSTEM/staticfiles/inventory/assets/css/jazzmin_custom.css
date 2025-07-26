@@ -1,0 +1,128 @@
+/* inventory/static/inventory/assets/css/jazzmin_custom.css */
+
+/* Primary brand color for main elements */
+:root {
+    /* Your existing brown theme colors */
+    --primary-brown: #795548;
+    --darker-brown: #5D4037;
+    --even-darker-brown: #4E342E;
+    --light-beige: #EFEBE9;
+    --light-brown-border: #D7CCC8;
+
+    /* Jazzmin overrides using your colors */
+    --primary: var(--primary-brown);
+    --primary-dark: var(--darker-brown);
+    --primary-light: var(--primary-brown); /* Adjust if you have a lighter variant for highlights */
+
+    /* AdminLTE variables (Jazzmin uses AdminLTE) */
+    --blue: var(--primary-brown);
+    --blue-dark: var(--darker-brown);
+    --info: var(--primary-brown); /* For info alerts, etc. */
+    --success: #28a745; /* Keep standard green for success */
+    --danger: #dc3545;  /* Keep standard red for danger */
+    --warning: #ffc107; /* Keep standard yellow for warning */
+    --white: #fff;
+    --dark: var(--darker-brown); /* For dark elements */
+    --light: var(--light-beige); /* For light elements */
+    --secondary: #6c757d; /* Keep standard grey for secondary */
+    --gray: #6c757d;
+    --gray-dark: #343a40;
+    --light-gray: #f8f9fa;
+}
+
+/* Specific overrides for Jazzmin elements */
+
+/* Sidebar background */
+.main-sidebar, .main-sidebar::before {
+    background-color: var(--darker-brown) !important; /* Your dark brown sidebar */
+}
+
+/* Sidebar active link background */
+.nav-sidebar .nav-item.menu-open > .nav-link,
+.nav-sidebar .nav-item > .nav-link.active,
+.nav-sidebar .nav-item > .nav-link.active:hover {
+    background-color: var(--primary-brown) !important; /* A slightly lighter brown for active */
+    color: var(--white) !important;
+}
+
+/* Sidebar link hover */
+.nav-sidebar .nav-item > .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important; /* Light white overlay on hover */
+    color: var(--white) !important;
+}
+
+/* Sidebar text color */
+.nav-sidebar .nav-link {
+    color: var(--white) !important;
+}
+
+/* Brand logo background */
+.brand-link {
+    background-color: var(--darker-brown) !important; /* Match sidebar */
+    border-bottom: 1px solid var(--even-darker-brown) !important; /* Darker border */
+}
+
+/* Top Navbar background */
+.main-header {
+    background-color: var(--light-beige) !important; /* Light beige header */
+    border-bottom: 1px solid var(--light-brown-border) !important; /* Light brown border */
+}
+
+/* Top Navbar links (text color) */
+.main-header .nav-link {
+    color: var(--darker-brown) !important; /* Dark brown text for top bar icons/links */
+}
+.main-header .nav-link:hover {
+    color: var(--primary-brown) !important; /* Hover effect */
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-brown) !important;
+    border-color: var(--primary-brown) !important;
+    color: var(--white) !important;
+}
+.btn-primary:hover {
+    background-color: var(--darker-brown) !important;
+    border-color: var(--darker-brown) !important;
+}
+
+/* Form inputs focus state */
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-brown) !important;
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-brown-rgb), 0.25) !important;
+}
+
+/* Login page background */
+body.login-page {
+    background-color: var(--light-beige) !important;
+}
+
+/* Login box background */
+.login-box .card {
+    background-color: var(--white) !important;
+}
+
+/* Messages (alerts) */
+.alert-info {
+    background-color: var(--primary-brown) !important;
+    color: var(--white) !important;
+    border-color: var(--primary-brown) !important;
+}
+.alert-success {
+    background-color: #d4edda !important; /* Standard green */
+    color: #155724 !important;
+    border-color: #c3e6cb !important;
+}
+.alert-danger {
+    background-color: #f8d7da !important; /* Standard red */
+    color: #721c24 !important;
+    border-color: #f5c6cb !important;
+}
+
+/* Ensure logo on admin login page is styled */
+.login-box .login-logo img {
+    max-height: 80px; /* Adjust as needed */
+    width: auto;
+    margin-bottom: 15px;
+}

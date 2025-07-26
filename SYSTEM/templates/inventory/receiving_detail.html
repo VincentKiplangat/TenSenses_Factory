@@ -1,0 +1,700 @@
+{% extends 'base.html' %}
+{% block title %}Batch {{ batch.batch_number }} Details{% endblock %}
+{% load inventory_extras %}
+{% block content %}
+<style>
+    /* GENERAL TABLE STYLING FOR EXCEL-LIKE APPEARANCE */
+    /* Applies to both summary and transposed tables */
+    .table-responsive table { /* Target all tables within table-responsive */
+        font-family: Arial, Helvetica, sans-serif; /* Common spreadsheet font */
+        font-size: 0.9em; /* Slightly smaller, typical for spreadsheets */
+        border-collapse: separate; /* Allows individual cell borders and spacing */
+        border-spacing: 0;
+        border: 1px solid #adb5bd; /* A subtle outer border for the whole table */
+        width: 100%; /* Ensure tables take full available width */
+    }
+
+    .table-responsive th,
+    .table-responsive td {
+        padding: 8px 12px; /* Consistent padding for all cells (Excel-like) */
+        text-align: center;
+        vertical-align: middle;
+        border: 1px solid #dee2e6; /* Uniform light grey border for all cells */
+        white-space: nowrap; /* Prevent text wrapping unless explicitly broken */
+        overflow: hidden; /* Hide overflow if text is too long */
+        text-overflow: ellipsis; /* Add ellipsis for overflow */
+    }
+
+    /* Header specific styles */
+    .table-responsive thead th {
+        background-color: #e9ecef; /* Light grey header background */
+        font-weight: bold;
+        color: #495057; /* Slightly darker text for headers */
+        border-bottom: 2px solid #adb5bd; /* Stronger line under header row(s) */
+    }
+
+    /* Striped rows for readability */
+    .table-responsive tbody tr:nth-child(odd) {
+        background-color: #f8f9fa; /* Lightest grey for odd rows */
+    }
+    .table-responsive tbody tr:nth-child(even) {
+        background-color: #ffffff; /* White for even rows */
+    }
+
+    /* SUMMARY TABLE SPECIFIC STYLES (Retained & Adjusted) */
+    .summary-table-container thead th {
+        /* Overrides general header background for specific rows to keep demarcation colors */
+        background-color: #f0f2f5; /* Default header for this table */
+    }
+    .summary-table-container thead tr:nth-child(1) th { /* Region row */
+        background-color: #d1ecf1; /* Light blue for regions */
+        font-size: 1.0em; /* Adjusted font size */
+    }
+    .summary-table-container thead tr:nth-child(2) th { /* Store row */
+        background-color: #ffeeba; /* Light yellow for stores */
+    }
+    .summary-table-container thead tr:nth-child(3) th { /* Officer row */
+        background-color: #d4edda; /* Light green for officers */
+    }
+    .summary-table-container thead tr:nth-child(4) th { /* Samples row */
+        background-color: #f8f9fa; /* Light grey for sample numbers */
+        font-weight: normal;
+        border-bottom: 2px solid #adb5bd; /* Stronger bottom border for header block */
+    }
+
+    /* Style for the 'Metric' column header and cells in Summary Table */
+    .summary-table-container th[rowspan="4"] {
+        background-color: #f0f2f5; /* Match other summary headers */
+        font-weight: bold;
+        border-right: 2px solid #adb5bd; /* Thicker right border for separation */
+        min-width: 120px;
+    }
+    .summary-table-container tbody td:first-child {
+        background-color: #e9ecef; /* Match general header background */
+        font-weight: bold;
+        text-align: left; /* Align metric labels to the left */
+        border-right: 2px solid #adb5bd; /* Thicker right border for separation */
+    }
+
+
+    /* Custom borders for demarcation (Summary Table) */
+    .border-right-officer {
+        border-right: 2px solid #adb5bd !important;
+    }
+    .border-right-store {
+        border-right: 3px solid #6c757d !important;
+    }
+    .border-right-region {
+        border-right: 4px solid #343a40 !important;
+    }
+
+    /* TRANSPOSED TABLE SPECIFIC STYLING (New/Adjusted) */
+    .transposed-table-container tbody td:first-child {
+        background-color: #e9ecef; /* Match general header background */
+        font-weight: bold;
+        text-align: left; /* Align metric labels to the left */
+        min-width: 150px; /* Make the first column (Metric/Field) wider */
+    }
+    /* Ensure sample columns don't get too wide if many samples */
+    .transposed-table-container th:not(:first-child),
+    .transposed-table-container td:not(:first-child) {
+        min-width: 80px; /* Adjust as needed */
+        max-width: 120px; /* Adjust as needed */
+    }
+
+
+    /* GENERAL UTILITY STYLES */
+    .delete-icon {
+        color: #dc3545; /* Red color */
+        cursor: pointer;
+        font-size: 1.1em;
+        vertical-align: middle;
+    }
+    .delete-icon:hover {
+        color: #c82333;
+    }
+
+    .table-responsive + .btn {
+        margin-top: 1.5rem;
+    }
+
+    a {
+        text-decoration: none; /* Remove underline from links in table cells */
+        color: #007bff; /* Bootstrap primary link color */
+    }
+    a:hover {
+        text-decoration: underline; /* Add underline on hover for clarity */
+    }
+
+    /* SIZING REPORT TABLE SPECIFIC STYLES */
+    .sizing-report-table th,
+    .sizing-report-table td {
+        border: 1px solid #dee2e6; /* Consistent cell borders */
+        padding: 8px 12px;
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .sizing-report-table thead th {
+        background-color: #e9ecef; /* General header background */
+        font-weight: bold;
+        color: #495057;
+        border-bottom: 2px solid #adb5bd;
+    }
+
+    .sizing-report-table .fo-header {
+        background-color: #ffeeba; /* Light yellow for FO headers, similar to store headers */
+        font-weight: bold;
+        border-bottom: 1px solid #adb5bd; /* Lighter border than main header */
+    }
+
+    .sizing-report-table .average-column {
+        background-color: #d4edda; /* Light green for average column, similar to officer headers */
+        font-weight: bold;
+        border-left: 2px solid #adb5bd; /* Stronger left border to separate from samples */
+    }
+
+    .sizing-report-table .sizing-label-col {
+        text-align: left;
+        font-weight: bold;
+        background-color: #e9ecef; /* Consistent with other metric labels */
+        border-right: 2px solid #adb5bd; /* Stronger right border to separate from data */
+    }
+
+    /* FO Average Table specific styles (if different from general) */
+    /* If you want this to look like a standard Bootstrap table, ensure .table-bordered etc. are used. */
+    .fo-average-table { /* Adding a specific class for potential future custom styles */
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .fo-average-table th, .fo-average-table td {
+        border: 1px solid #dee2e6;
+        padding: 8px 12px;
+        text-align: center;
+    }
+    .fo-average-table thead th {
+        background-color: #e9ecef;
+        font-weight: bold;
+    }
+    .fo-average-table tbody tr:nth-child(odd) {
+        background-color: #f8f9fa;
+    }
+    .fo-average-table tbody tr:nth-child(even) {
+        background-color: #ffffff;
+    }
+    .fo-average-table tbody td:first-child {
+        background-color: #e9ecef;
+        font-weight: bold;
+        text-align: left;
+    }
+
+</style>
+
+{# Ensure Bootstrap Icons CSS is linked for the trash icon #}
+{# Ideally, add this to your base.html to load it once for the whole site. #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<form method="get" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="search" class="form-control" placeholder="Search by Field Officer, Store, Region or Sample No..." value="{{ request.GET.search }}">
+        <button class="btn btn-outline-primary" type="submit">
+            <i class="bi bi-search"></i> Search
+        </button>
+    </div>
+</form>
+{##}
+{#{% if request.GET.search %}#}
+{#    <p class="text-muted">Showing results for: <strong>{{ request.GET.search }}</strong></p>#}
+{#{% endif %}#}
+{#{% if not grouped_skr_data and not grouped_moisture_data and not '' %}#}
+{#    <p class="text-danger mt-3">No matching samples found for "<strong>{{ request.GET.search }}</strong>".</p>#}
+{#{% endif %}#}
+{% if searched %}
+    {% if search_query %}
+        <p class="text-muted">Showing results for: <strong>{{ search_query }}</strong></p>
+
+        {% if not grouped_skr_data and not grouped_moisture_data %}
+            <p class="text-danger mt-3">No matching samples found for "<strong>{{ search_query }}</strong>".</p>
+        {% endif %}
+    {% else %}
+        <p class="text-info mt-3">You submitted an empty search. Please enter a keyword to search samples.</p>
+    {% endif %}
+{% endif %}
+
+
+<h2>Batch {{ batch.batch_number }}</h2>
+<p>Date Created: {{ batch.created_at }}</p>
+    <hr>
+
+<hr>
+
+{# ************************************************ #}
+{#               NORMAL SKR SECTION                 #}
+{# ************************************************ #}
+<h3>Normal SKR Samples</h3>
+<p>Click a <strong>Sample No.</strong> to edit that sample. Use the <i class="bi bi-trash"></i> icon to delete a sample.</p>
+{% if normal_skr %}
+    <div class="table-responsive transposed-table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Metric/Field</th> {# This is the fixed header for the metric labels (rows) #}
+                    {% for sample in normal_skr %}
+                        <th>Sample {{ sample.sample_number }}</th> {# Dynamic headers for each sample (columns) #}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for label in transposed_metric_order %}
+                <tr>
+                    <td><strong>{{ label }}</strong></td> {# The label for the current row #}
+                    {% for sample in normal_skr %}
+                        <td>
+                            {% if label == "Sample No" %}
+                                <a href="{% url 'edit_sample' sample.id %}">{{ sample.sample_number }}</a>
+                            {% elif label == "Field Officer" %}
+                                {{ sample.field_officer.name }}
+                            {% elif label == "Store" %}
+                                {{ sample.field_officer.store.name }}
+                            {% elif label == "Region" %}
+                                {{ sample.field_officer.store.region.name }}
+                            {% elif label == "Good Q" %}
+                                {{ sample.good_q|floatformat:2 }}
+                            {% elif label == "Insect Damaged" %}
+                                {{ sample.insect_damaged|floatformat:2 }}
+                            {% elif label == "Mold" %}
+                                {{ sample.mold|floatformat:2 }}
+                            {% elif label == "Immature" %}
+                                {{ sample.immature|floatformat:2 }}
+                            {% elif label == "Weight (kg)" %}
+                                {{ sample.weight|floatformat:2 }}
+                            {% elif label == "Moisture (%)" %}
+                                {{ sample.moisture|floatformat:2 }}
+                            {% elif label == "Spillage" %}
+                                {{ sample.spillage|floatformat:2 }}
+                            {% elif label == "SKR" %}
+                                {{ sample.skr|floatformat:2 }}
+                            {% elif label == "Delete" %}
+{#                                {% if user.is_staff %}#}
+                                    <a href="{% url 'delete_sample' sample.id %}" class="delete-icon" onclick="return confirm('Are you sure you want to delete Sample No {{ sample.sample_number }}?');" title="Delete Sample">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+{#                                {% endif %}#}
+                            {% else %}
+                                N/A {# Fallback for any label not explicitly handled #}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+<p>No Normal SKR samples available yet for this batch.</p>
+{% endif %}
+    <div class="mt-3"> {# Added margin-top for spacing #}
+     <a href="{% url 'add_normal_skr' pk=batch.pk %}" class="btn btn-sm btn-primary me-2">
+            + Add Normal SKR Sample
+        </a>
+    </div>
+
+<hr>
+
+<h3>Normal SKR Summary</h3>
+{% if grouped_skr_data %}
+<div class="table-responsive summary-table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th rowspan="4" class="align-middle text-center">Metric</th>
+                {# Region headers #}
+                {% for region_entry in grouped_skr_data %}
+                    <th colspan="{{ region_entry.total_samples }}" class="text-center
+                        {% if not forloop.last %} border-right-region {% endif %}">
+                        {{ region_entry.name }}
+                    </th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {# Stores Row #}
+                {% for region_entry in grouped_skr_data %}
+                    {% for store_entry in region_entry.stores %}
+                        <th colspan="{{ store_entry.total_samples }}" class="text-center
+                            {% if not forloop.last %} border-right-store {% elif not forloop.parentloop.last %} border-right-region {% endif %}">
+                            {{ store_entry.name }}
+                        </th>
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            <tr>
+                {# Suppliers (Field Officers) Row #}
+                {% for region_entry in grouped_skr_data %}
+                    {% for store_entry in region_entry.stores %}
+                        {% for officer_entry in store_entry.officers %}
+                            <th colspan="{{ officer_entry.total_samples }}" class="text-center
+                                {% if not forloop.last %} border-right-officer
+                                {% elif not forloop.parentloop.last %} border-right-store
+                                {% elif not forloop.parentloop.parentloop.last %} border-right-region {% endif %}">
+                                {{ officer_entry.name }}
+                            </th>
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            <tr>
+                {# Samples Row #}
+                {% for region_entry in grouped_skr_data %}
+                    {% for store_entry in region_entry.stores %}
+                        {% for officer_entry in store_entry.officers %}
+                            {% for sample in officer_entry.samples %}
+                                <th class="text-center
+                                    {% if not forloop.last %} border-right-officer
+                                    {% elif not forloop.parentloop.last %} border-right-store
+                                    {% elif not forloop.parentloop.parentloop.last %} border-right-region {% endif %}">
+                                    Sample {{ sample.sample_number }}
+                                </th>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {# Iterate through the predefined metric order #}
+            {% for metric_label in metric_order %}
+                <tr>
+                    <td><strong>{{ metric_label }}</strong></td>
+                    {% for region_entry in grouped_skr_data %}
+                        {% for store_entry in region_entry.stores %}
+                            {% for officer_entry in store_entry.officers %}
+                                {% for sample in officer_entry.samples %}
+                                    <td class="
+                                        {% if not forloop.last %} border-right-officer
+                                        {% elif not forloop.parentloop.last %} border-right-store
+                                        {% elif not forloop.parentloop.parentloop.last %} border-right-region {% endif %}">
+                                        {# Display the correct metric value #}
+                                        {% if metric_label == "Good Q" %}{{ sample.good_q|floatformat:2 }}
+                                        {% elif metric_label == "Insect Damaged" %}{{ sample.insect_damaged|floatformat:2 }}
+                                        {% elif metric_label == "Mold" %}{{ sample.mold|floatformat:2 }}
+                                        {% elif metric_label == "Immature" %}{{ sample.immature|floatformat:2 }}
+                                        {% elif metric_label == "Weight" %}{{ sample.weight|floatformat:2 }}
+                                        {% elif metric_label == "SKR" %}{{ sample.skr|floatformat:2 }}
+                                        {% elif metric_label == "Moisture" %}{{ sample.moisture|floatformat:2 }}
+                                        {% elif metric_label == "Spillage" %}{{ sample.spillage|floatformat:2 }}
+                                        {% else %}N/A{% endif %}
+                                    </td>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="mt-3"> {# Added margin-top for spacing #}
+        <a href="{% url 'download_normal_skr' batch.id %}" class="btn btn-sm btn-success me-2">
+            📥 Download Excel for Normal SKR
+        </a>
+    </div>
+</div>
+{% else %}
+<p>No Normal SKR samples available yet for this batch.</p>
+{% endif %}
+
+<hr>
+
+{# ************************************************ #}
+{#               MOISTURE SKR SECTION               #}
+{# ************************************************ #}
+<h3>Moisture SKR Samples</h3>
+<p>Click a <strong>Sample No.</strong> to edit that sample. Use the <i class="bi bi-trash"></i> icon to delete a sample.</p>
+{% if moisture_skr %}
+    <div class="table-responsive transposed-table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Metric/Field</th>
+                    {% for sample in moisture_skr %}
+                        <th>Sample {{ sample.sample_number }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for label in transposed_metric_order %}
+                <tr>
+                    <td><strong>{{ label }}</strong></td>
+                    {% for sample in moisture_skr %}
+                        <td>
+                            {% if label == "Sample No" %}
+                                <a href="{% url 'edit_moisture_skr' sample.id %}">{{ sample.sample_number }}</a>
+                            {% elif label == "Field Officer" %}
+                                {{ sample.field_officer.name }}
+                            {% elif label == "Store" %}
+                                {{ sample.field_officer.store.name }}
+                            {% elif label == "Region" %}
+                                {{ sample.field_officer.store.region.name }}
+                            {% elif label == "Good Q" %}
+                                {{ sample.good_q|floatformat:2 }}
+                            {% elif label == "Insect Damaged" %}
+                                {{ sample.insect_damaged|floatformat:2 }}
+                            {% elif label == "Mold" %}
+                                {{ sample.mold|floatformat:2 }}
+                            {% elif label == "Immature" %}
+                                {{ sample.immature|floatformat:2 }}
+                            {% elif label == "Weight (kg)" %}
+                                {{ sample.weight|floatformat:2 }}
+                            {% elif label == "Moisture (%)" %}
+                                {{ sample.moisture|floatformat:2 }}
+                            {% elif label == "Spillage" %}
+                                {{ sample.spillage|floatformat:2 }}
+                            {% elif label == "SKR" %}
+                                {{ sample.skr|floatformat:2 }}
+                            {% elif label == "Delete" %}
+{#                                {% if user.is_staff %}#}
+                                    <a href="{% url 'delete_moisture_skr' sample.id %}" class="delete-icon" onclick="return confirm('Are you sure you want to delete Sample No {{ sample.sample_number }}?');" title="Delete Sample">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+{#                                {% endif %}#}
+                            {% else %}
+                                N/A {# Fallback for any label not explicitly handled #}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+<p>No Moisture SKR samples available yet for this batch.</p>
+{% endif %}
+    <div class="mt-3"> {# Added margin-top for spacing #}
+     <a href="{% url 'add_moisture_skr' pk=batch.pk %}" class="btn btn-sm btn-primary me-2">
+            + Add Moisture SKR Sample
+        </a>
+    </div>
+
+<hr>
+
+<h3>Moisture SKR Summary</h3>
+{% if grouped_moisture_data %}
+<div class="table-responsive summary-table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th rowspan="4" class="align-middle text-center">Metric</th>
+                {% for region_entry in grouped_moisture_data %}
+                    <th colspan="{{ region_entry.total_samples }}" class="text-center
+                        {% if not forloop.last %} border-right-region {% endif %}">
+                        {{ region_entry.name }}
+                    </th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {# Stores Row #}
+                {% for region_entry in grouped_moisture_data %}
+                    {% for store_entry in region_entry.stores %}
+                        <th colspan="{{ store_entry.total_samples }}" class="text-center
+                            {% if not forloop.last %} border-right-store {% elif not forloop.parentloop.last %} border-right-region {% endif %}">
+                            {{ store_entry.name }}
+                        </th>
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            <tr>
+                {# Suppliers (Field Officers) Row #}
+                {% for region_entry in grouped_moisture_data %}
+                    {% for store_entry in region_entry.stores %}
+                        {% for officer_entry in store_entry.officers %}
+                            <th colspan="{{ officer_entry.total_samples }}" class="text-center
+                                {% if not forloop.last %} border-right-officer
+                                {% elif not forloop.parentloop.last %} border-right-store
+                                {% elif not forloop.parentloop.parentloop.last %} border-right-region {% endif %}">
+                                {{ officer_entry.name }}
+                            </th>
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            <tr>
+                {# Samples Row #}
+                {% for region_entry in grouped_moisture_data %}
+                    {% for store_entry in region_entry.stores %}
+                        {% for officer_entry in store_entry.officers %}
+                            {% for sample in officer_entry.samples %}
+                                <th class="text-center
+                                    {% if not forloop.last %} border-right-officer
+                                    {% elif not forloop.parentloop.last %} border-right-store
+                                    {% elif not forloop.parentloop.parentloop.last %} border-right-region {% endif %}">
+                                    Sample {{ sample.sample_number }}
+                                </th>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {# Iterate through the predefined metric order #}
+            {% for metric_label in metric_order %}
+                <tr>
+                    <td><strong>{{ metric_label }}</strong></td>
+                    {% for region_entry in grouped_moisture_data %}
+                        {% for store_entry in region_entry.stores %}
+                            {% for officer_entry in store_entry.officers %}
+                                {% for sample in officer_entry.samples %}
+                                    <td class="
+                                        {% if not forloop.last %} border-right-officer
+                                        {% elif not forloop.parentloop.last %} border-right-store
+                                        {% elif not forloop.parentloop.parentloop.last %} border-right-region {% endif %}">
+                                        {# Display the correct metric value - Will show N/A as averages are not pre-calculated #}
+                                        {% if metric_label == "Good Q" %}{{ sample.good_q|floatformat:2 }}
+                                        {% elif metric_label == "Insect Damaged" %}{{ sample.insect_damaged|floatformat:2 }}
+                                        {% elif metric_label == "Mold" %}{{ sample.mold|floatformat:2 }}
+                                        {% elif metric_label == "Immature" %}{{ sample.immature|floatformat:2 }}
+                                        {% elif metric_label == "Weight" %}{{ sample.weight|floatformat:2 }}
+                                        {% elif metric_label == "SKR" %}{{ sample.skr|floatformat:2 }}
+                                        {% elif metric_label == "Moisture" %}{{ sample.moisture|floatformat:2 }}
+                                        {% elif metric_label == "Spillage" %}{{ sample.spillage|floatformat:2 }}
+                                        {% else %}N/A{% endif %}
+                                    </td>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="mt-3"> {# Added margin-top for spacing #}
+        <a href="{% url 'download_skr_moisture' batch.id %}" class="btn btn-sm btn-success me-2"> {# Updated URL name #}
+            📥 Download Excel for Moisture SKR
+        </a>
+    </div>
+</div>
+{% else %}
+<p>No Moisture SKR samples available yet for this batch.</p>
+{% endif %}
+
+<hr>
+
+{# ************************************************ #}
+{#               SIZING REPORT SECTION              #}
+{# ************************************************ #}
+<h3>Sizing Report for Batch {{ batch.batch_number }}</h3>
+
+{% if field_officer_names %}
+<div class="table-responsive sizing-report-table">
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2" class="align-middle text-center">FO</th>
+                {% for fo_name in field_officer_names %}
+                    <th colspan="{{ max_sizing_samples_per_fo }}" class="fo-header">{{ fo_name }}</th>
+                {% endfor %}
+                <th rowspan="2" class="average-column align-middle text-center">Grand Average</th>
+            </tr>
+            <tr>
+                {% for fo_name in field_officer_names %}
+                    {% with fo_current_data=fo_sizing_data|dict_get:fo_name %}
+                        {% for i in max_sizing_samples_per_fo|create_range %}
+                            {% with sample_obj=fo_current_data.samples|dict_get:i %}
+                                {% if sample_obj %}
+                                    <th>{{ sample_obj.sample_num }}</th>
+                                {% else %}
+                                    <th></th>
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+                    {% endwith %}
+                {% endfor %}
+                <th></th> {# Empty header for Grand Average #}
+            </tr>
+        </thead>
+        <tbody>
+            {% for metric_key, metric_label in sizing_metric_definitions %}
+                <tr>
+                    <td class="sizing-label-col">{{ metric_label }}</td>
+                    {% for fo_name in field_officer_names %}
+                        {% with fo_current_data=fo_sizing_data|dict_get:fo_name %}
+                            {% for i in max_sizing_samples_per_fo|create_range %}
+                                {% with sample_obj=fo_current_data.samples|dict_get:i %}
+                                    <td>
+                                        {% if sample_obj %}
+                                            {{ sample_obj|dict_get:metric_key|floatformat:2 }}
+                                        {% else %}
+                                            {# Keep cell empty #}
+                                        {% endif %}
+                                    </td>
+                                {% endwith %}
+                            {% endfor %}
+                        {% endwith %}
+                    {% endfor %}
+                    <td class="average-column">{{ grand_sizing_averages|dict_get:metric_key|floatformat:2 }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="mt-3">
+    <a href="{% url 'download_sizing_data_excel' batch.id %}" class="btn btn-sm btn-success me-2">
+        📥 Download Sizing Report Excel
+    </a>
+</div>
+{% else %}
+    <p>No sizing data available for this batch.</p>
+{% endif %}
+
+<hr>
+
+{# ************************************************ #}
+{#               FO AVERAGE SECTION                 #}
+{# ************************************************ #}
+<h3>FO Average Table (Normal SKR)</h3>
+
+{% if fo_averages_display %}
+<div class="table-responsive fo-average-table"> {# Added specific class #}
+    <table class="table table-bordered table-sm"> {# Kept Bootstrap classes as they are useful #}
+        <thead>
+            <tr>
+                <th>Metric</th>
+                {% for fo in fo_average_fo_names %}
+                    <th>{{ fo }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for metric in fo_average_metrics %}
+                <tr>
+                    <td><strong>{{ metric }}</strong></td>
+                    {% for fo in fo_average_fo_names %}
+                        <td>{{ fo_averages_display|default_if_none:""|dict_get:metric|dict_get:fo|floatformat:2 }}</td> {# Added floatformat #}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>No FO average data available yet for this batch.</p>
+{% endif %}
+
+<div class="mt-3">
+    <a href="{% url 'download_fo_average' batch.id %}" class="btn btn-sm btn-success me-2">
+        📥 Download FO's Average Excel
+    </a>
+    <a href="{% url 'batch_detail' batch.id %}" class="btn btn-sm btn-secondary">Back to Batch Overview</a>
+</div>
+<div>
+<div class="mb-3 text-end">
+    <a href="{% url 'download_combined_skr_excel' batch.id %}" class="btn btn-outline-primary">
+        ⬇ Download Merged Excel
+    </a>
+</div>
+
+</div>
+
+{% endblock %}
