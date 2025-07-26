@@ -29,76 +29,7 @@
   {# Your main custom theme stylesheet, loaded AFTER Bootstrap #}
   <link rel="stylesheet" href="{% static 'inventory/assets/css/style.css' %}" id="main-style-link" />
 
-  <style>
-  /* Color-related custom inline styles */
-  :root {
-    /* Updated brown theme colors */
-    --primary: #795548 !important;        /* Primary brown */
-    --primary-500: #5D4037 !important;    /* Darker brown */
-    --primary-600: #4E342E !important;    /* Even darker brown */
-    --primary-700: #3E2723 !important;    /* Darkest brown */
-    --primary-400: #8D6E63 !important;    /* Lighter brown */
-    --primary-300: #A1887F !important;    /* Light brown */
-
-    /* Additional theme adjustments */
-    --pc-theme: #EFEBE9 !important;       /* Light beige background */
-    --pc-sidebar-bg: #5D4037 !important;  /* Dark brown sidebar */
-    --pc-sidebar-color: #fff !important;  /* White text for sidebar */
-  }
-
-  /* Pre-loader styling */
-  .loader-bg {
-    background: #EFEBE9 !important;       /* Light beige background */
-  }
-  .loader-fill {
-    background: var(--primary) !important; /* Brown progress bar */
-  }
-
-  /* Header styling */
-  .pc-header {
-    background: #EFEBE9 !important;        /* Light beige background */
-    border-bottom: 1px solid #D7CCC8 !important; /* Light brown border */
-  }
-
-  /* Sidebar styling */
-  .pc-sidebar {
-    background: var(--pc-sidebar-bg) !important;
-    color: var(--pc-sidebar-color) !important;
-  }
-  .pc-item.pc-caption label {
-    color: #D7CCC8 !important;             /* Light brown caption text */
-  }
-  .pc-link {
-    color: #fff !important;
-  }
-  .pc-link:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-  }
-
-  /* User dropdown styling */
-  .dropdown-user-profile .dropdown-header {
-    background: var(--primary-500) !important;
-  }
-
-  /* Buttons */
-  .btn-primary {
-    background: var(--primary) !important;
-    border-color: var(--primary-600) !important;
-  }
-  .btn-primary:hover {
-    background: var(--primary-600) !important;
-  }
-
-  /* === Custom Logo & Title Styling === */
-  .b-brand {
-    color: var(--pc-sidebar-color); /* Inherit color from sidebar for text */
-  }
-
-  .b-brand .site-title {
-    color: var(--pc-sidebar-color); /* White text for sidebar */
-  }
-</style>
-
+  
 </head>
 <script>
   // Force light theme before other scripts load and apply previous settings
