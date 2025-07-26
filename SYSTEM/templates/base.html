@@ -30,113 +30,75 @@
   <link rel="stylesheet" href="{% static 'inventory/assets/css/style.css' %}" id="main-style-link" />
 
   <style>
-    /* Your existing custom inline styles for theme colors, preloader, header, sidebar, buttons, logo, etc. */
-    :root {
-      /* Updated brown theme colors */
-      --primary: #795548 !important;        /* Primary brown */
-      --primary-500: #5D4037 !important;    /* Darker brown */
-      --primary-600: #4E342E !important;    /* Even darker brown */
-      --primary-700: #3E2723 !important;    /* Darkest brown */
-      --primary-400: #8D6E63 !important;    /* Lighter brown */
-      --primary-300: #A1887F !important;    /* Light brown */
+  /* Color-related custom inline styles */
+  :root {
+    /* Updated brown theme colors */
+    --primary: #795548 !important;        /* Primary brown */
+    --primary-500: #5D4037 !important;    /* Darker brown */
+    --primary-600: #4E342E !important;    /* Even darker brown */
+    --primary-700: #3E2723 !important;    /* Darkest brown */
+    --primary-400: #8D6E63 !important;    /* Lighter brown */
+    --primary-300: #A1887F !important;    /* Light brown */
 
-      /* Additional theme adjustments */
-      --pc-theme: #EFEBE9 !important;       /* Light beige background */
-      --pc-sidebar-bg: #5D4037 !important;  /* Dark brown sidebar */
-      --pc-sidebar-color: #fff !important;  /* White text for sidebar */
-    }
+    /* Additional theme adjustments */
+    --pc-theme: #EFEBE9 !important;       /* Light beige background */
+    --pc-sidebar-bg: #5D4037 !important;  /* Dark brown sidebar */
+    --pc-sidebar-color: #fff !important;  /* White text for sidebar */
+  }
 
-    /* Pre-loader styling */
-    .loader-bg {
-      background: #EFEBE9 !important;       /* Light beige background */
-    }
-    .loader-fill {
-      background: var(--primary) !important; /* Brown progress bar */
-    }
+  /* Pre-loader styling */
+  .loader-bg {
+    background: #EFEBE9 !important;       /* Light beige background */
+  }
+  .loader-fill {
+    background: var(--primary) !important; /* Brown progress bar */
+  }
 
-    /* Header styling */
-    .pc-header {
-      background: #EFEBE9 !important;        /* Light beige background */
-      border-bottom: 1px solid #D7CCC8 !important; /* Light brown border */
-      display: flex;
-      height: 74px;
-      transition-property: all;
-      transition-duration: 200ms;
-      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-      position: fixed;
-      top: 0;
-      right: 0;
-      z-index: 1000; /* ensure it's on top */
-    }
+  /* Header styling */
+  .pc-header {
+    background: #EFEBE9 !important;        /* Light beige background */
+    border-bottom: 1px solid #D7CCC8 !important; /* Light brown border */
+  }
 
-    /* Sidebar styling */
-    .pc-sidebar {
-      background: var(--pc-sidebar-bg) !important;
-      color: var(--pc-sidebar-color) !important;
+  /* Sidebar styling */
+  .pc-sidebar {
+    background: var(--pc-sidebar-bg) !important;
+    color: var(--pc-sidebar-color) !important;
+  }
+  .pc-item.pc-caption label {
+    color: #D7CCC8 !important;             /* Light brown caption text */
+  }
+  .pc-link {
+    color: #fff !important;
+  }
+  .pc-link:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
 
-    }
-    .pc-item.pc-caption label {
-      color: #D7CCC8 !important;             /* Light brown caption text */
-    }
-    .pc-link {
-      color: #fff !important;
-    }
-    .pc-link:hover {
-      background: rgba(255, 255, 255, 0.1) !important;
-    }
+  /* User dropdown styling */
+  .dropdown-user-profile .dropdown-header {
+    background: var(--primary-500) !important;
+  }
 
-    /* User dropdown styling */
-    .dropdown-user-profile .dropdown-header {
-      background: var(--primary-500) !important;
-    }
+  /* Buttons */
+  .btn-primary {
+    background: var(--primary) !important;
+    border-color: var(--primary-600) !important;
+  }
+  .btn-primary:hover {
+    background: var(--primary-600) !important;
+  }
 
-    /* Buttons */
-    .btn-primary {
-      background: var(--primary) !important;
-      border-color: var(--primary-600) !important;
-    }
-    .btn-primary:hover {
-      background: var(--primary-600) !important;
-    }
+  /* === Custom Logo & Title Styling === */
+  .b-brand {
+    color: var(--pc-sidebar-color); /* Inherit color from sidebar for text */
+  }
 
-    /* === Custom Logo & Title Styling === */
-    /* Adjust padding for the header containing the logo */
-    .navbar-wrapper .m-header {
-        /* Default py-4 px-6 from Tailwind provides 1rem top/bottom, 1.5rem left/right */
-        /* You can adjust these if you need more space */
-        padding-top: 20px; /* Example: slightly more padding from the top */
-        padding-bottom: 15px; /* Adjust as needed */
-        padding-left: 20px; /* Adjust as needed */
-        /* Ensure logo area itself maintains consistent height if needed */
-        height: auto; /* Allow content to dictate height, or set a fixed value like 74px */
-    }
+  .b-brand .site-title {
+    color: var(--pc-sidebar-color); /* White text for sidebar */
+  }
+</style>
 
-    /* Ensure .b-brand is a flex container for horizontal alignment */
-    .b-brand {
-        display: flex;
-        align-items: center; /* Vertically center the logo and text */
-        gap: 10px; /* Space between the logo image and the text */
-        text-decoration: none; /* Remove underline from the link */
-        color: var(--pc-sidebar-color); /* Inherit color from sidebar for text */
-    }
-
-    /* Style the actual logo image (icon only) */
-    .b-brand .site-logo {
-        height: 40px; /* Adjust the height of your logo icon as needed */
-        width: auto; /* Maintain aspect ratio */
-        object-fit: contain; /* Ensures the image scales properly */
-    }
-
-    /* Style the site title text */
-    .b-brand .site-title {
-        font-size: 1.5rem; /* Adjust font size as desired */
-        font-weight: 600; /* Adjust font weight for boldness */
-        color: var(--pc-sidebar-color); /* White text for sidebar */
-        white-space: nowrap; /* Prevent text from wrapping */
-        line-height: 1; /* Adjust line height for better vertical alignment */
-    }
-    /* =================================== */
-  </style>
 </head>
 <script>
   // Force light theme before other scripts load and apply previous settings
