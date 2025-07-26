@@ -28,6 +28,7 @@ ALLOWED_HOSTS = [
     'www.vincentkiplangat.engineer',
     '127.0.0.1',
     'localhost',
+    '159.65.252.112',
 ]
 
 
